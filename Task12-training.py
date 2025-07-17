@@ -10,6 +10,7 @@ from trl import SFTTrainer, SFTConfig
 from dataset import SFTDataCollator, SFTDataset
 from utils.constants import model2template
 
+# Using RTX 6000 Ada 48GB
 
 @dataclass
 class LoraTrainingArguments:
