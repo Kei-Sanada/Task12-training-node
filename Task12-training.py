@@ -120,8 +120,12 @@ def train_lora(
     # save model
     trainer.save_model("outputs")
 
-    # remove checkpoint folder
-    os.system("rm -rf outputs/checkpoint-*")
+    # remove checkpoint folder (Windows/Linux互換)
+    import platform
+    if platform.system() == "Windows":
+        os.system("rmdir /s /q outputs\\checkpoint-* 2>nul")
+    else:
+        os.system("rm -rf outputs/checkpoint-*")
 
     # 学習時間を記録
     end_time = time.time()
