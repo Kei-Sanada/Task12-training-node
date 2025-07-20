@@ -1,10 +1,10 @@
-import os
+﻿import os
 from dataclasses import dataclass
 import time  # 時間計測用
 
 import torch
 from peft import LoraConfig
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, EarlyStoppingCallback
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig, EarlyStoppingCallback, TrainerCallback
 from trl import SFTTrainer, SFTConfig
 
 from dataset import SFTDataCollator, SFTDataset
@@ -22,17 +22,25 @@ class LoraTrainingArguments:
     lora_dropout: int
 
 
-class TimeoutCallback:
+class TimeoutCallback(TrainerCallback):
     """2時間制限のためのコールバック"""
     def __init__(self, max_time_hours=2):
         self.max_time_seconds = max_time_hours * 3600
         self.start_time = time.time()
     
-    def on_step_end(self, args, state, control, **kwargs):
+    def on_step_begin(self, args, state, control, **kwargs):
         elapsed_time = time.time() - self.start_time
         if elapsed_time > self.max_time_seconds:
             print(f"Time limit reached: {elapsed_time/3600:.2f} hours")
             control.should_training_stop = True
+            return control
+    
+    def on_log(self, args, state, control, **kwargs):
+        elapsed_time = time.time() - self.start_time
+        if elapsed_time > self.max_time_seconds:
+            print(f"Time limit reached: {elapsed_time/3600:.2f} hours")
+            control.should_training_stop = True
+            return control
 
 
 def train_lora(
@@ -95,10 +103,10 @@ def train_lora(
 
     # Load dataset
     dataset = SFTDataset(
-    file="https://fed-ledger-prod-dataset.s3.amazonaws.com/12/training_set.jsonl?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIASSFQ745NLT5K57N2%2F20250716%2Fus-east-2%2Fs3%2Faws4_request&X-Amz-Date=20250716T144600Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=afe57cd54ce40999e4e901ab8ced192a471cc0c4309dfa8da670ee77d9f69ebd",
-    tokenizer=tokenizer,
-    max_seq_length=context_length,
-    template=model2template[model_id],
+        file="training_set.jsonl",
+        tokenizer=tokenizer,
+        max_seq_length=context_length,
+        template=model2template[model_id],
     )
 
     # Define trainer
