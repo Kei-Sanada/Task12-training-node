@@ -4,14 +4,7 @@ from typing import Any, Dict, List
 import torch
 from loguru import logger
 from torch.utils.data import Dataset
-# from utils.tool_utils import function_formatter  # コメントアウト
-
-# function_formatterの簡単な実装
-def function_formatter(data):
-    """簡単なfunction_formatter実装"""
-    if isinstance(data, dict) and "name" in data:
-        return f"Function: {data.get('name', '')} Args: {data.get('args', {})}"
-    return str(data)
+from utils.tool_utils import function_formatter
 
 
 class SFTDataset(Dataset):
