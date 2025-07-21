@@ -36,7 +36,6 @@ pip install -r requirements.txt
 
 
 HF_TOKEN="hf_XXXXXXXXXXXXXXXXXXXXXXXXX" CUDA_VISIBLE_DEVICES=0 python Task12-training.py
-HF_TOKEN="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" CUDA_VISIBLE_DEVICES=0 python Task12-training.py
 
 
 #OutPutsのダウンロード
@@ -45,5 +44,3 @@ scp -P 12345 -r root@1.2.3.4:/root/Task12-training-node/outputs ~/Downloads/
 
 Full Automation
 TASK_ID=<task-id> FLOCK_API_KEY="<your-flock-api-key-stakes-as-node-for-the-task>" HF_TOKEN="<your-hf-token>" CUDA_VISIBLE_DEVICES=0 HF_USERNAME="your-hf-user-name" python full_automation.py
-
-TASK_ID=12 FLOCK_API_KEY="EAFAIGIXS8TDINQWHUZE9W0EV2ZNQC0N" HF_TOKEN="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" CUDA_VISIBLE_DEVICES=0 HF_USERNAME="Kei-Sanada" python full_automation.py
