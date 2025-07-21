@@ -4,7 +4,14 @@ from typing import Any, Dict, List
 import torch
 from loguru import logger
 from torch.utils.data import Dataset
-from utils.tool_utils import function_formatter
+# from utils.tool_utils import function_formatter  # コメントアウト
+
+# function_formatterの簡単な実装
+def function_formatter(data):
+    """簡単なfunction_formatter実装"""
+    if isinstance(data, dict) and "name" in data:
+        return f"Function: {data.get('name', '')} Args: {data.get('args', {})}"
+    return str(data)
 
 
 class SFTDataset(Dataset):
@@ -34,7 +41,7 @@ class SFTDataset(Dataset):
 
         # setting system information
         if self.system_format is not None:
-            system = data["system"].strip() if "system" in data.keys() else self.system
+            system = data["system"].strip() if "system" in data.keys() else None  # self.system → None
 
             if system is not None:
                 system_text = self.system_format.format(content=system)
