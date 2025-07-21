@@ -11,6 +11,7 @@ from dataset import SFTDataCollator, SFTDataset
 from utils.constants import model2template  # 元に戻す（ファイルが存在するため）
 
 # Using RTX 4090 24GB (Optimized for 24GB VRAM)
+# Using RTX 6000 Ada 48GB
 
 @dataclass
 class LoraTrainingArguments:
@@ -142,19 +143,19 @@ def train_lora(
 
 
 if __name__ == "__main__":
-    # Define training arguments for LoRA fine-tuning (RTX 4090 24GB optimized)
+    # Define training arguments for LoRA fine-tuning (RTX 6000 Ada 48GB optimized)
     training_args = LoraTrainingArguments(
-        num_train_epochs=5,  # 2時間制限内で効果的な学習
-        per_device_train_batch_size=3,  # RTX 4090向けに調整 (4→3)
-        gradient_accumulation_steps=3,  # 実効バッチサイズ9を維持
-        lora_rank=32,  # より表現力のあるLoRA
-        lora_alpha=64,  # rankの2倍に設定
+        num_train_epochs=5,
+        per_device_train_batch_size=4,  # より大きなバッチサイズ
+        gradient_accumulation_steps=2,  # 実効バッチサイズ8
+        lora_rank=64,  # より高いランク
+        lora_alpha=128,
         lora_dropout=0.1,
     )
 
     # Set model ID and context length
     model_id = "Qwen/Qwen2.5-7B-Instruct"  # Qwen2.5 7Bに変更
-    context_length = 2048
+    context_length = 4096  # より長いコンテキスト
 
     # Start LoRA fine-tuning
     train_lora(
