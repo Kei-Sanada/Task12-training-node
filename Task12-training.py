@@ -8,9 +8,9 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from trl import SFTTrainer, SFTConfig
 
 from dataset import SFTDataCollator, SFTDataset
-from utils.constants import model2template
+from utils.constants import model2template  # 元に戻す（ファイルが存在するため）
 
-# Using RTX 6000 Ada 48GB
+# Using RTX 4090 24GB (Optimized for 24GB VRAM)
 
 @dataclass
 class LoraTrainingArguments:
@@ -19,7 +19,7 @@ class LoraTrainingArguments:
     num_train_epochs: int
     lora_rank: int
     lora_alpha: int
-    lora_dropout: int
+    lora_dropout: float  # int → float に修正
 
 
 class TimeoutCallback(TrainerCallback):
@@ -71,7 +71,7 @@ def train_lora(
         bnb_4bit_compute_dtype=torch.bfloat16,
     )
 
-    training_args = SFTConfig(
+    training_config = SFTConfig(
         per_device_train_batch_size=training_args.per_device_train_batch_size,
         gradient_accumulation_steps=training_args.gradient_accumulation_steps,
         warmup_steps=100,
@@ -83,7 +83,7 @@ def train_lora(
         remove_unused_columns=False,
         num_train_epochs=training_args.num_train_epochs,
         max_seq_length=context_length,
-        dataloader_num_workers=4,  # データローディング高速化
+        dataloader_num_workers=2,  # RTX 4090向けに調整 (4→2)
         dataloader_pin_memory=True,  # メモリ効率化
         gradient_checkpointing=True,  # メモリ節約
         save_steps=500,  # 保存頻度を調整
@@ -98,7 +98,7 @@ def train_lora(
         model_id,
         quantization_config=bnb_config,
         device_map={"": 0},
-        token=os.environ["HF_TOKEN"],
+        token=os.environ.get("HF_TOKEN"),  # 安全な環境変数取得
     )
 
     # Load dataset
@@ -115,7 +115,7 @@ def train_lora(
     trainer = SFTTrainer(
         model=model,
         train_dataset=dataset,
-        args=training_args,
+        args=training_config,  # training_args → training_config に修正
         peft_config=lora_config,
         data_collator=SFTDataCollator(tokenizer, max_seq_length=context_length),
         callbacks=[timeout_callback],  # 時間制限コールバックを追加
@@ -142,11 +142,11 @@ def train_lora(
 
 
 if __name__ == "__main__":
-    # Define training arguments for LoRA fine-tuning
+    # Define training arguments for LoRA fine-tuning (RTX 4090 24GB optimized)
     training_args = LoraTrainingArguments(
         num_train_epochs=5,  # 2時間制限内で効果的な学習
-        per_device_train_batch_size=4,  # Qwen2.5 7Bに最適化
-        gradient_accumulation_steps=2,
+        per_device_train_batch_size=3,  # RTX 4090向けに調整 (4→3)
+        gradient_accumulation_steps=3,  # 実効バッチサイズ9を維持
         lora_rank=32,  # より表現力のあるLoRA
         lora_alpha=64,  # rankの2倍に設定
         lora_dropout=0.1,
