@@ -6,18 +6,20 @@ import yaml
 from loguru import logger
 from huggingface_hub import HfApi
 
-from Task12_training import LoraTrainingArguments, train_lora
-from utils.constants import model2base_model, model2size
-from utils.flock_api import get_task, submit_task
-from utils.gpu_utils import get_gpu_type
-import os
+# ファイル名がTask12-training.pyの場合、importspecで直接インポート
+import importlib.util
+import sys
 
-import requests
-import yaml
-from loguru import logger
-from huggingface_hub import HfApi
+# Task12-training.pyファイルを動的にインポート
+spec = importlib.util.spec_from_file_location("Task12_training", "Task12-training.py")
+Task12_training = importlib.util.module_from_spec(spec)
+sys.modules["Task12_training"] = Task12_training
+spec.loader.exec_module(Task12_training)
 
-from Task12_training import LoraTrainingArguments, train_lora
+# 必要なクラスと関数をインポート
+LoraTrainingArguments = Task12_training.LoraTrainingArguments
+train_lora = Task12_training.train_lora
+
 from utils.constants import model2base_model, model2size
 from utils.flock_api import get_task, submit_task
 from utils.gpu_utils import get_gpu_type
