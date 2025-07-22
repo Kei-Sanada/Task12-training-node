@@ -6,7 +6,7 @@ import yaml
 from loguru import logger
 from huggingface_hub import HfApi
 
-from demo import LoraTrainingArguments, train_lora
+from Task12_training import LoraTrainingArguments, train_lora
 from utils.constants import model2base_model, model2size
 from utils.flock_api import get_task, submit_task
 from utils.gpu_utils import get_gpu_type
@@ -33,9 +33,11 @@ if __name__ == "__main__":
     model2size = {k: v for k, v in model2size.items() if v <= max_params}
     all_training_args = {k: v for k, v in all_training_args.items() if k in model2size}
     logger.info(f"Models within the max_params: {all_training_args.keys()}")
-    # download in chunks
+    # Create data directory if it doesn't exist
+    os.makedirs("data", exist_ok=True)
+    # download in chunks - Fixed: download to correct filename
     response = requests.get(data_url, stream=True)
-    with open("data/demo_data.jsonl", "wb") as f:
+    with open("training_set.jsonl", "wb") as f:
         for chunk in response.iter_content(chunk_size=8192):
             f.write(chunk)
 
