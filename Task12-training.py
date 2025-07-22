@@ -77,7 +77,8 @@ def train_lora(
         gradient_accumulation_steps=training_args.gradient_accumulation_steps,
         warmup_steps=100,
         learning_rate=5e-5,  # Qwen2.5に最適化
-        bf16=True,
+        bf16=False,  # bf16非対応環境用にFalseに変更
+        fp16=True,   # fp16を使用（推奨）
         logging_steps=20,
         output_dir="outputs",
         optim="adamw_torch_fused",  # 高速化のためfused optimizerを使用
